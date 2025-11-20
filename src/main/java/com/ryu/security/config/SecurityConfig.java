@@ -9,10 +9,6 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-
 
 @Configuration
 @EnableWebSecurity
@@ -21,22 +17,9 @@ public class SecurityConfig {
     @Value("${frontend.url}")
     private String frontendUrl;
 
-    // 비밀번호 암호화를 위한 PasswordEncoder Bean 등록
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public InMemoryUserDetailsManager userDetailsService(PasswordEncoder passwordEncoder) {
-
-        UserDetails user = User.builder()
-                .username("testuser")                          // 로그인 아이디
-                .password(passwordEncoder.encode("1234"))      // 비밀번호(BCrypt로 암호화)
-                .roles("USER")                                 // ROLE_USER
-                .build();
-
-        return new InMemoryUserDetailsManager(user);
     }
 
     @Bean
@@ -44,16 +27,29 @@ public class SecurityConfig {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
+
+                // URL 접근 권한 설정
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/public").permitAll()
+                        // 회원가입, public 페이지는 누구나 접근 허용
+                        .requestMatchers("/public", "/api/signup").permitAll()
+
+                        // 관리자 전용 URL
+                        .requestMatchers("/admin/**").hasRole("ADMIN") // ROLE_ADMIN
+
+                        // USER, ADMIN 공통 URL
+                        .requestMatchers("/user/**").hasAnyRole("USER", "ADMIN")
+
+                        // 나머지는 로그인만 되어 있으면 허용
                         .anyRequest().authenticated()
                 )
+
                 .formLogin(login -> login
                         .loginPage(frontendUrl + "/custom-login")
                         .loginProcessingUrl("/login")
                         .defaultSuccessUrl("/hello")
                         .permitAll()
                 )
+
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/public")
