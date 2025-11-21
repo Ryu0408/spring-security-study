@@ -1,11 +1,11 @@
 package com.ryu.security.user;
 
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 public class CustomUserDetails implements UserDetails {
 
@@ -15,15 +15,8 @@ public class CustomUserDetails implements UserDetails {
         this.user = user;
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        // DB에 ROLE_USER 형태로 저장됐다고 가정
-        return List.of(new SimpleGrantedAuthority(user.getRole()));
-    }
-
-    @Override
-    public String getPassword() {
-        return user.getPassword(); // BCrypt로 인코딩된 값
+    public Long getId() {
+        return user.getId();
     }
 
     @Override
@@ -31,24 +24,26 @@ public class CustomUserDetails implements UserDetails {
         return user.getUsername();
     }
 
-    // 필요에 따라 계정 만료/잠김 등 처리, 지금은 전부 true
     @Override
-    public boolean isAccountNonExpired() {
-        return true;
+    public String getPassword() {
+        return user.getPassword();
     }
 
     @Override
-    public boolean isAccountNonLocked() {
-        return true;
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(user::getRole);
+    }
+
+    // equals / hashCode 구현 필수
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CustomUserDetails other)) return false;
+        return Objects.equals(this.getUsername(), other.getUsername());
     }
 
     @Override
-    public boolean isCredentialsNonExpired() {
-        return true;
-    }
-
-    @Override
-    public boolean isEnabled() {
-        return true;
+    public int hashCode() {
+        return Objects.hash(this.getUsername());
     }
 }
