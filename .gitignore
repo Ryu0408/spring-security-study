@@ -46,3 +46,8 @@ logs/
 ### OS ###
 .DS_Store
 Thumbs.db
+
+### 보안 ###
+.env
+.env.development
+.env.production
