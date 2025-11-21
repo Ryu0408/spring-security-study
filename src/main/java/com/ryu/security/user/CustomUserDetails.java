@@ -29,12 +29,20 @@ public class CustomUserDetails implements UserDetails {
         return user.getPassword();
     }
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of(user::getRole);
+    /**
+     * ROLE(USER/ADMIN) 꺼내기 위한 메서드 추가 (핵심)
+     */
+    public String getRole() {
+        return user.getRole();    // "ROLE_USER" or "ROLE_ADMIN"
     }
 
-    // equals / hashCode 구현 필수
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        // 기존 방식도 동작은 하지만 권장 방식은 아님
+        return List.of((GrantedAuthority) () -> user.getRole());
+    }
+
+    // equals / hashCode 구현
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
