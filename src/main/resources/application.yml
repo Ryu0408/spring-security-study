@@ -26,6 +26,9 @@ server:
   servlet:
     session:
       timeout: 30m   # 30분 (m: 분, s: 초, h: 시간)
+      cookie:
+        same-site: lax   # 기본은 Lax 권장 (로그인 CSRF 완화)
+        secure: false    # HTTPS 환경에서는 true로
 
 frontend:
   url: ${FRONTEND_URL}
