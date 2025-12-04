@@ -32,3 +32,7 @@ server:
 
 frontend:
   url: ${FRONTEND_URL}
+
+jwt:
+  secret: ${JWT_SECRET_KEY}
+  access-token-expiration: 3600 # 1시간
